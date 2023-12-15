@@ -17,7 +17,7 @@ const App: React.FC = () => (
 				element={<VersionsPage />}
 			/>
 			<Route
-				path="/inspector/:tokenId"
+				path="/inspector/:cid"
 				element={<InspectorPage />}
 			/>
 			<Route

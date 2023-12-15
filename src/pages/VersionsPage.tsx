@@ -1,15 +1,22 @@
 import { useEffect, useState } from "react";
 import { Page, Spinner } from "../components";
-import { useParams } from "react-router-dom";
-import { getTokenURIHistory } from "../adapter";
+import { useNavigate, useParams } from "react-router-dom";
+import { getTokenURIHistory, getTokenName } from "../utils/adapter";
+import { readFromIPFS } from "../utils/ifps";
 
 export const VersionsPage: React.FC = () => {
 	const { tokenId } = useParams();
+	const navigate = useNavigate();
+
 	const [URIHistory, setURIHistory] = useState<string[] | null>(null);
+	const [tokenName, setTokenName] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (!tokenId || isNaN(parseInt(tokenId!))) return;
-		getTokenURIHistory(parseInt(tokenId!)).then((res) => !!res && setURIHistory(res));
+		Promise.all([getTokenURIHistory(parseInt(tokenId!)), getTokenName(parseInt(tokenId!))]).then(([res1, res2]) => {
+			!!res1 && setURIHistory(res1);
+			!!res2 && setTokenName(res2);
+		});
 	}, [tokenId]);
 
 	if (!tokenId || isNaN(parseInt(tokenId!))) return <Page>No token id supplied!</Page>;
@@ -18,7 +25,7 @@ export const VersionsPage: React.FC = () => {
 		<Page>
 			{URIHistory !== null ? (
 				<>
-					<h1 className="w-full mb-5 font-mono text-3xl">{tokenId}</h1>
+					<h1 className="w-full mb-5 font-mono text-3xl">{tokenName}</h1>
 					<ul className="timeline timeline-vertical">
 						{URIHistory.map((uri, i) => (
 							<li>
@@ -38,7 +45,14 @@ export const VersionsPage: React.FC = () => {
 										/>
 									</svg>
 								</div>
-								<div className="timeline-end timeline-box">{uri}</div>
+								<div className="timeline-end timeline-box">
+									<button
+										className="btn btn-link"
+										onClick={() => navigate(`/inspector/${uri}`)}
+									>
+										{uri}
+									</button>
+								</div>
 								{i !== URIHistory.length - 1 && <hr />}
 							</li>
 						))}
