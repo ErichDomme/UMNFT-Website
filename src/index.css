@@ -1,3 +1,13 @@
+@import "material-icons/iconfont/material-icons.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:where(.timeline > li) {
+	grid-template-columns: 0 0fr 9fr;
+}
+
+.timeline-end {
+	justify-self: stretch !important;
+}

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Page, Spinner } from "../components";
 import { useNavigate, useParams } from "react-router-dom";
 import { getTokenURIHistory, getTokenName } from "../utils/adapter";
-import { readFromIPFS } from "../utils/ifps";
 
 export const VersionsPage: React.FC = () => {
 	const { tokenId } = useParams();
@@ -24,13 +23,13 @@ export const VersionsPage: React.FC = () => {
 	return (
 		<Page>
 			{URIHistory !== null ? (
-				<>
-					<h1 className="w-full mb-5 font-mono text-3xl">{tokenName}</h1>
+				<div className="my-[10vh]">
+					<h1 className="w-full mb-10 font-mono text-3xl">{tokenName}</h1>
 					<ul className="timeline timeline-vertical">
 						{URIHistory.map((uri, i) => (
 							<li>
 								{i !== 0 && <hr />}
-								<div className="timeline-start">time</div>
+								<div className="timeline-start" />
 								<div className="timeline-middle">
 									<svg
 										xmlns="http://www.w3.org/2000/svg"
@@ -45,19 +44,33 @@ export const VersionsPage: React.FC = () => {
 										/>
 									</svg>
 								</div>
-								<div className="timeline-end timeline-box">
+								<div className="flex flex-row items-center justify-between my-2 ml-5 border-none timeline-end timeline-box bg-base-200 flex-nowrap">
+									<p>{uri}</p>
 									<button
-										className="btn btn-link"
+										className="pr-0 btn btn-link"
 										onClick={() => navigate(`/inspector/${uri}`)}
 									>
-										{uri}
+										<svg
+											xmlns="http://www.w3.org/2000/svg"
+											fill="none"
+											viewBox="0 0 24 24"
+											strokeWidth={1.5}
+											stroke="currentColor"
+											className="w-6 h-6"
+										>
+											<path
+												strokeLinecap="round"
+												strokeLinejoin="round"
+												d="M12.75 15l3-3m0 0l-3-3m3 3h-7.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+											/>
+										</svg>
 									</button>
 								</div>
 								{i !== URIHistory.length - 1 && <hr />}
 							</li>
 						))}
 					</ul>
-				</>
+				</div>
 			) : (
 				<Spinner />
 			)}
