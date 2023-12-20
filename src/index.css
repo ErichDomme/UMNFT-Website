@@ -11,3 +11,7 @@
 .timeline-end {
 	justify-self: stretch !important;
 }
+
+#ifc-viewer {
+	text-align: start !important;
+}

@@ -1,4 +1,6 @@
 import { HashRouter as Router, Routes, Route } from "react-router-dom";
+import { MetamaskStateProvider } from "use-metamask";
+
 import { HomePage } from "./pages/HomePage";
 import { VersionsPage } from "./pages/VersionsPage";
 import { InspectorPage } from "./pages/InspectorPage";
@@ -21,8 +23,12 @@ const App: React.FC = () => (
 				element={<InspectorPage />}
 			/>
 			<Route
-				path="/upload"
-				element={<UploadPage />}
+				path="/upload/:tokenId"
+				element={
+					<MetamaskStateProvider>
+						<UploadPage />
+					</MetamaskStateProvider>
+				}
 			/>
 		</Routes>
 	</Router>

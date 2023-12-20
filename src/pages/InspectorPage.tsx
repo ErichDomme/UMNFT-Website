@@ -1,7 +1,7 @@
 import { useParams } from "react-router-dom";
 import { Page, Spinner } from "../components";
 import { useEffect, useRef, useState } from "react";
-import { readFromIPFS } from "../utils/ifps";
+import { readFromIPFS } from "../utils/ipfs";
 import * as OBC from "openbim-components";
 import * as THREE from "three";
 import { FragmentsGroup } from "bim-fragment";
@@ -36,7 +36,7 @@ export const InspectorPage: React.FC = () => {
 
 			await components.init();
 
-			new OBC.FragmentManager(components);
+			const fragments = new OBC.FragmentManager(components);
 			const fragmentIfcLoader = new OBC.FragmentIfcLoader(components);
 
 			fragmentIfcLoader.settings.wasm = {
@@ -46,7 +46,7 @@ export const InspectorPage: React.FC = () => {
 
 			const scene = components.scene.get();
 
-			new OBC.SimpleGrid(components, new THREE.Color("#555"));
+			new OBC.SimpleGrid(components, new THREE.Color("#000"));
 
 			const buffer = await readFromIPFS(cid);
 
@@ -85,21 +85,66 @@ export const InspectorPage: React.FC = () => {
 
 			// <<<<<<<<<<<<<<<<<<
 
-			(components.scene as OBC.SimpleScene).setup({
-				directionalLight: {
-					intensity: 0,
-					color: new THREE.Color(),
-					position: new THREE.Vector3(0, 0, 0),
-				},
-				ambientLight: {
-					intensity: 1.5,
-					color: new THREE.Color(),
-				},
+			// >>> Bounding Box >>>
+
+			// const fragmentBbox = new OBC.FragmentBoundingBox(components);
+			// fragmentBbox.add(model);
+
+			// const bbox = fragmentBbox.getMesh();
+			// fragmentBbox.reset();
+
+			// const button = new OBC.Button(components);
+			// button.materialIcon = "zoom_in_map";
+			// button.tooltip = "Zoom to building";
+			// toolbar.addChild(button);
+
+			// const controls = (components.camera as OBC.SimpleCamera).controls;
+			// (button.onClick as OBC.Event<void>).add(() => {
+			// 	controls.fitToSphere(bbox, true);
+			// });
+
+			// <<<<<<<<<<<<<<<<<<
+
+			// >>> Material Inspector >>>
+
+			const propsProcessor = new OBC.IfcPropertiesProcessor(components);
+			propsProcessor.process(model);
+
+			const highlighterEvents = highlighter.events;
+			highlighterEvents.select.onClear.add(() => {
+				propsProcessor.cleanPropertiesList();
 			});
+			highlighterEvents.select.onHighlight.add((selection) => {
+				const fragmentID = Object.keys(selection)[0];
+				const expressID = Number([...selection[fragmentID]][0]);
+				let model;
+				for (const group of fragments.groups) {
+					const fragmentFound = Object.values(group.keyFragments).find((id) => id === fragmentID);
+					if (fragmentFound) model = group;
+				}
+				propsProcessor.renderProperties(model ?? new FragmentsGroup(), expressID);
+			});
+
+			toolbar.addChild(propsProcessor.uiElement.get("main"));
+
+			// <<<<<<<<<<<<<<<<<<
+
+			// (components.scene as OBC.SimpleScene).setup();
+			(components.scene as OBC.SimpleScene).setup();
+
+			(components.renderer as OBC.PostproductionRenderer).postproduction.setPasses({
+				custom: true,
+			});
+
+			(components.renderer as OBC.PostproductionRenderer).postproduction.customEffects.glossEnabled = false;
+			(components.renderer as OBC.PostproductionRenderer).postproduction.customEffects.lineColor = 0x000000;
+			(components.renderer as OBC.PostproductionRenderer).postproduction.customEffects.opacity = 0.2;
 
 			// for some reason we have to pretend to resize the window
 			// .resize(), .setSize(), .update() wont work
 			window.dispatchEvent(new Event("resize"));
+
+			console.log(model);
 
 			setModel(model);
 		})();
@@ -109,10 +154,10 @@ export const InspectorPage: React.FC = () => {
 
 	return (
 		<Page>
-			<div
-				id={CONTAINER_ID}
-				className={`w-full mockup-window bg-base-300 my-[10vh] ${model == null ? "invisible" : ""}`}
-			/>
+			<div className={`w-full mockup-window bg-base-300 my-[10vh] ${model == null ? "invisible" : ""}`}>
+				<p className="mt-[-1.75rem] mb-4 h-3 leading-3 font-mono opacity-30 text-white">{cid}</p>
+				<div id={CONTAINER_ID} />
+			</div>
 			{model == null ? (
 				<Spinner className="absolute" />
 			) : (
