@@ -10,7 +10,7 @@ export const HomePage: React.FC = () => {
 			<div className="flex gap-2 row">
 				<input
 					type="text"
-					placeholder="NFT token id"
+					placeholder="UMNFT token ID"
 					className="w-full max-w-xs input input-bordered input-primary"
 					onChange={(e) => setTokenId(e.target.value)}
 				/>
