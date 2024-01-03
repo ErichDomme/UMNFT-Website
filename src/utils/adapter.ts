@@ -4,7 +4,7 @@ import { ABI } from "./abi";
 const RPC_URL = `https://goerli.infura.io/v3/${import.meta.env.VITE_INFURA_API_KEY}`;
 
 const web3 = new Web3(RPC_URL);
-const contract = new web3.eth.Contract(ABI, "0xDdC9B13071379E5b3887d9E2507B241e8AafBcbD");
+const contract = new web3.eth.Contract(ABI, "0x051a747F0b7498aAfb88c4ADbb3A9B97C273091E");
 contract.defaultChain = "goerli";
 
 export function getTokenURIHistory(tokenId: number): Promise<string[]> {
