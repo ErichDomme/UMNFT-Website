@@ -9,7 +9,7 @@ export const HomePage: React.FC = () => {
     return (
         <Page>
             <div className="flex flex-col items-center">
-                <img src={'public/icon_blue_nft.svg'} alt="Logo" className="mb-4" />
+                <img src={'/icon_blue_nft.svg'} alt="Logo" className="mb-4" />
                 <div className="flex gap-2 row">
                     <input
                         type="text"
