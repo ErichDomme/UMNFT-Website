@@ -6,11 +6,15 @@ import * as OBC from "openbim-components";
 import * as THREE from "three";
 import { FragmentsGroup } from "bim-fragment";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type IfcProperty = any | null;
+
 const CONTAINER_ID = "ifc-viewer";
 
 export const InspectorPage: React.FC = () => {
 	const isInitialMount = useRef(true);
 	const [model, setModel] = useState<FragmentsGroup | null>(null);
+	const [properties, setProperties] = useState<IfcProperty[] | null>(null);
 	const { cid } = useParams();
 
 	useEffect(() => {
@@ -61,6 +65,27 @@ export const InspectorPage: React.FC = () => {
 			(components.renderer as OBC.PostproductionRenderer).postproduction.enabled = true;
 			const highlighter = new OBC.FragmentHighlighter(components);
 			highlighter.setup();
+
+			highlighter.events.select.onHighlight.add((data) => {
+				const ids = new Set(
+					Object.values(data)
+						.map((s) => [...s.values()])
+						.flat()
+				);
+				const ps: IfcProperty[] = [];
+				for (const id of ids)
+					propsProcessor
+						.getProperties(model, id)
+						?.forEach(
+							(p: IfcProperty) => !ps.find((q: IfcProperty) => q.expressID === p.expressID) && ps.push(p)
+						);
+
+				console.log(ps);
+				console.log(propertiesToObject(ps));
+				setProperties(ps);
+			});
+
+			highlighter.events.select.onClear.add(() => setProperties(null));
 
 			// <<<<<<<<<<<<<<<<<<
 
@@ -174,8 +199,84 @@ export const InspectorPage: React.FC = () => {
 							</tbody>
 						</table>
 					</div>
+					{properties !== null && (
+						<div className="w-3/4 mx-auto overflow-x-auto mb-[10vh] rounded-lg">
+							{objectToTable(propertiesToObject(properties))}
+						</div>
+					)}
 				</div>
 			)}
 		</Page>
 	);
 };
+
+function propertiesToObject(properties: IfcProperty[]): { r: object; n: number } {
+	let sum = 0;
+	const res = Object.fromEntries(
+		properties
+			.map((p) => {
+				if (p["HasPropertySets"] !== undefined && p["HasPropertySets"] !== null) {
+					const { r, n } = propertiesToObject(p.HasPropertySets.map((q: { value: IfcProperty }) => q.value));
+					sum += n;
+					return [p.Name.value, { r, n }];
+				} else if (p["HasProperties"] !== undefined && p["HasProperties"] !== null) {
+					const { r, n } = propertiesToObject(p.HasProperties.map((q: { value: IfcProperty }) => q.value));
+					sum += n;
+					return [p.Name.value, { r, n }];
+				} else if (p["NominalValue"] !== undefined && p["NominalValue"] !== undefined) {
+					sum += 1;
+					return [p["expressID"], [p.Name.value, p.NominalValue.value]];
+				}
+				return null;
+			})
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			.filter((o) => o !== null) as [string, any][]
+	);
+	return { r: res, n: sum };
+}
+
+function objectToTable(object: { r: object; n: number }): React.ReactNode {
+	// TODO use in-order traversal to obtain a list of table nodes
+
+	const rows: React.ReactNode[][] = [];
+	let i = 0;
+
+	for (const node of traverse(object)) {
+		rows[i] ??= [];
+		rows[i].push(node);
+		if ((node as { type: string }).type == "td") i++;
+	}
+
+	return (
+		<table className="table bg-base-200">
+			<tbody>{...rows.map((r) => <tr className="border-neutral">{...r}</tr>)}</tbody>
+		</table>
+	);
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function traverse(object: { r: object; n: number } | any[], list: React.ReactNode[] = []): React.ReactNode[] {
+	if (Array.isArray(object)) {
+		list.push(<th>{Object.values(object)[0].toString()}</th>);
+		list.push(<td>{Object.values(object)[1].toString()}</td>);
+	} else {
+		Object.entries(object.r).forEach(([k, v]) => {
+			if (v["n"] !== undefined) list.push(<th rowSpan={v.n}>{k}</th>);
+			traverse(v, list);
+		});
+	}
+
+	return list;
+}
+
+// // eslint-disable-next-line @typescript-eslint/no-explicit-any
+// function rec(object: { r: object; n: number } | any[]): React.ReactNode[] {
+// 	if (Array.isArray(object))
+// 		return [<th>{Object.values(object)[0].toString()}</th>, <td>{Object.values(object)[1].toString()}</td>];
+// 	return Object.entries(object.r).map(([k, v]) => (
+// 		<>
+// 			<th rowSpan={object.n}>{k}</th>
+// 			<>{...rec(v)}</>
+// 		</>
+// 	));
+// }
