@@ -11,6 +11,9 @@ type IfcProperty = any | null;
 
 const CONTAINER_ID = "ifc-viewer";
 let propsProcessor: OBC.IfcPropertiesProcessor;
+let highlighter: OBC.FragmentHighlighter;
+
+let ignoreNextHighlight: boolean = false;
 
 // TODO use expressIDs for any kind of paths, currently only done for the leaf nodes
 // TODO hash paths instead of joining them with "", could lead to some ambiguities
@@ -38,8 +41,6 @@ export const InspectorPage: React.FC = () => {
 			)
 			.map((p) => parseInt(p.expressID));
 
-		console.log("VALUE SHARED BETWEEN:", PEIDs, path, path[path.length - 2], path[path.length - 1]);
-
 		const entities: Set<number> = new Set();
 
 		const indexMap = Object.values(propsProcessor.get())[0];
@@ -62,12 +63,24 @@ export const InspectorPage: React.FC = () => {
 							.forEach(([k, v]) => entities.add(parseInt(k)));
 					});
 			}
-			console.log(PEIDs, "->", nextPEIDs);
 			PEIDs = nextPEIDs;
 		}
 
 		console.log("PEIDs:", PEIDs);
 		console.log("ENTITIES:", entities);
+
+		const filter: Record<string, Set<string>> = {};
+		for (const e of entities) {
+			const found = model!.items!.filter((i) => i.items.includes(e.toString()));
+			for (const f of found) {
+				filter[f.id] ??= new Set<string>();
+				filter[f.id].add(e.toString());
+			}
+		}
+		console.log("FILTER:", filter);
+		ignoreNextHighlight = true;
+		highlighter.highlightByID("select", filter, true, true);
+
 		setGroup([...entities]);
 	}
 
@@ -152,10 +165,16 @@ export const InspectorPage: React.FC = () => {
 			// >>> Highlighter >>>
 
 			(components.renderer as OBC.PostproductionRenderer).postproduction.enabled = true;
-			const highlighter = new OBC.FragmentHighlighter(components);
+			highlighter = new OBC.FragmentHighlighter(components);
 			highlighter.setup();
 
 			highlighter.events.select.onHighlight.add((data) => {
+				if (ignoreNextHighlight) {
+					ignoreNextHighlight = false;
+					console.log("IGNORED HIGHLIGHT EVENT");
+					return;
+				}
+
 				const ids = new Set(
 					Object.values(data)
 						.map((s) => [...s.values()])
@@ -174,7 +193,7 @@ export const InspectorPage: React.FC = () => {
 				setProperties(ps);
 			});
 
-			highlighter.events.select.onClear.add(() => setProperties(null));
+			highlighter.events.select.onClear.add(() => !ignoreNextHighlight && setProperties(null));
 
 			// <<<<<<<<<<<<<<<<<<
 
