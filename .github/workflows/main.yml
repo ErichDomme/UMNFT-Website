@@ -20,6 +20,9 @@ on:
 jobs:
   test-deploy:
     name: test and deploy
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     permissions:
       security-events: write
