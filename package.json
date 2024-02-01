@@ -2,7 +2,7 @@
 	"name": "umnft-website",
 	"private": true,
 	"version": "0.0.0",
-	"homepage": "https://erichdomme.github.io/umnft-website",
+	"homepage": "https://erichdomme.github.io/umnft-website/",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
