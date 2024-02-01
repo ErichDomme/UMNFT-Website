@@ -2,12 +2,14 @@
 	"name": "umnft-website",
 	"private": true,
 	"version": "0.0.0",
+	"homepage": "https://erichdomme.github.io/umnft-website",
 	"type": "module",
 	"scripts": {
 		"dev": "vite",
 		"build": "tsc && vite build",
 		"lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-		"preview": "vite preview"
+		"preview": "vite preview",
+		"deploy": "gh-pages -d dist"
 	},
 	"dependencies": {
 		"@types/three": "^0.159.0",
@@ -38,6 +40,7 @@
 		"eslint": "^8.53.0",
 		"eslint-plugin-react-hooks": "^4.6.0",
 		"eslint-plugin-react-refresh": "^0.4.4",
+		"gh-pages": "^6.1.1",
 		"postcss": "^8.4.31",
 		"prettier": "^3.1.0",
 		"tailwindcss": "^3.3.5",
