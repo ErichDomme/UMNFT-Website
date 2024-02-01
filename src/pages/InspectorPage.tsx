@@ -58,9 +58,9 @@ export const InspectorPage: React.FC = () => {
 						nextPEIDs.push(p.expressID as number);
 						Object.entries(indexMap)
 							// eslint-disable-next-line @typescript-eslint/no-unused-vars
-							.filter(([k, v]) => v.has(p.expressID as number))
+							.filter(([_, v]) => v.has(p.expressID as number))
 							// eslint-disable-next-line @typescript-eslint/no-unused-vars
-							.forEach(([k, v]) => entities.add(parseInt(k)));
+							.forEach(([k, _]) => entities.add(parseInt(k)));
 					});
 			}
 			PEIDs = nextPEIDs;
