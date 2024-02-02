@@ -120,11 +120,11 @@ export const InspectorPage: React.FC = () => {
 	}
 
 	useEffect(() => {
-		// if (isInitialMount.current) {
-		// 	isInitialMount.current = false;
-		// 	console.log("RETURNING isInitialMount.current = true");
-		// 	return;
-		// }
+		if (isInitialMount.current) {
+			isInitialMount.current = false;
+			console.log("RETURNING isInitialMount.current = true");
+			// return;
+		}
 
 		if (!cid) {
 			console.log("RETURNING !cid = true");
