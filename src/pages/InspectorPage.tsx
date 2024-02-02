@@ -122,12 +122,10 @@ export const InspectorPage: React.FC = () => {
 	useEffect(() => {
 		if (isInitialMount.current) {
 			isInitialMount.current = false;
-			console.log("RETURNING isInitialMount.current = true");
-			// return;
+			// return; this messes with the gh-pages deployment
 		}
 
 		if (!cid) {
-			console.log("RETURNING !cid = true");
 			return;
 		}
 
@@ -149,12 +147,10 @@ export const InspectorPage: React.FC = () => {
 			const fragments = new OBC.FragmentManager(components);
 			const fragmentIfcLoader = new OBC.FragmentIfcLoader(components);
 
-			console.log("downloading wasm files...");
 			fragmentIfcLoader.settings.wasm = {
 				path: "https://unpkg.com/web-ifc@0.0.46/",
 				absolute: true,
 			};
-			console.log("set wasm files");
 
 			const scene = components.scene.get();
 
