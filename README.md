@@ -71,7 +71,7 @@ The UMNFT website is divided into four main pages, which are referred to in the 
 
 ## Project Status
 
-<span style="color:green">**Version 0.0.1 published!**</span>
+<span style="color:green">**Version 1.0.0 published!**</span>
 
 <!-- _complete_ / _no longer being worked on_. If you are no longer working on it, provide reasons why.-->
 
